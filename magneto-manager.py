@@ -8,8 +8,8 @@ import glob
 import serial
 import serial.tools.list_ports
 
-CONFIG_PATH = "/home/pi/printer_data/config/printer.cfg"
-BACKUP_PATH = "/home/pi/printer_data/config/printer.cfg.bak"
+CONFIG_PATH = "/home/pi/printer_data/config/magneto_device.cfg"
+BACKUP_PATH = "/home/pi/printer_data/config/magneto_device.cfg.bak"
 
 app = Flask(__name__)
 serial_connection = None
@@ -64,7 +64,7 @@ def auto_resize_filesystem():
         return jsonify({'success': f"Error occurred while resize filesystem: {e}"})
 
 
-# 执行shell命令并获取输出
+
 def run_command(command):
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode("utf-8")
@@ -72,28 +72,28 @@ def run_command(command):
     except subprocess.CalledProcessError as e:
         return e.output.decode("utf-8")
 
-# 从输出中获取canbus_uuids
+
 def extract_uuids(output):
     uuids = re.findall(r"canbus_uuid=(\w+)", output)
     return uuids
 
-# 备份配置文件
+
 def backup_config_file(filename):
     backup_filename = filename + ".backup"
     shutil.copy2(filename, backup_filename)
 
-# 修改配置文件
+
 def modify_config_file(filename, uuid):
     with open(filename, 'r') as file:
         lines = file.readlines()
 
-    # 替换配置文件中的canbus_uuid
+  
     for index, line in enumerate(lines):
         if "canbus_uuid:" in line:
             lines[index] = f"canbus_uuid: {uuid}\n"
             break
 
-    # 写回到文件
+
     with open(filename, 'w') as file:
         file.writelines(lines)
         file.flush()
@@ -106,7 +106,7 @@ def get_serial_devices():
     return devices
 
 def backup_config():
-    # 备份printer.cfg为printer.cfg.bak
+   
     shutil.copy2(CONFIG_PATH, BACKUP_PATH)
 
 def update_config_file(device):
@@ -116,19 +116,17 @@ def update_config_file(device):
     with open(CONFIG_PATH, 'r') as file:
         content = file.readlines()
 
-    # 检查是否有[mcu]段落，如果有则更新，否则添加
     mcu_section_found = False
     for index, line in enumerate(content):
         if line.strip() == '[mcu]':
             mcu_section_found = True
-            # 查找serial:行并更新
+            
             while "serial:" not in content[index] and content[index].strip() != "":
                 index += 1
             if "serial:" in content[index]:
                 content[index] = "serial: {}\n".format(device)
                 break
 
-    # 如果没有找到[mcu]段落，则添加
     if not mcu_section_found:
         content.append("\n[mcu]\n")
         content.append("serial: {}\n".format(device))
@@ -184,7 +182,7 @@ def set_mcu_uuid():
 
 @app.route('/set-can-uuid', methods=['GET'])
 def set_can_uuid():
-    config_path = "/home/pi/printer_data/config/magneto_toolhead.cfg"
+    config_path = "/home/pi/printer_data/config/magneto_device.cfg"
     
     # 检查文件是否存在
     if not os.path.exists(config_path):
