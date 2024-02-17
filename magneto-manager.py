@@ -10,6 +10,7 @@ import serial.tools.list_ports
 
 CONFIG_PATH = "/home/pi/printer_data/config/magneto_device.cfg"
 BACKUP_PATH = "/home/pi/printer_data/config/magneto_device.cfg.bak"
+VERSION_STR = "magneto-x-mainsailOS-2024-3-1-v1.1.0"
 
 app = Flask(__name__)
 serial_connection = None
@@ -25,6 +26,9 @@ def connect_to_serial():
                 print("Connect failed:")
     return None
 
+@app.route('/get_os_version', methods=['GET'])
+def get_os_version():
+    return jsonify({'version':VERSION_STR})
 
 @app.route('/connect_lm', methods=['GET'])
 def connect_esplm():
